@@ -90,6 +90,28 @@
     transform: scale(1.05);
     background: #9a7eff;
   }
+
+  .quick-links {
+    margin-top: 40px;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .quick-links a {
+    padding: 10px 16px;
+    background: var(--input-bg);
+    border-radius: 12px;
+    color: var(--text);
+    text-decoration: none;
+    transition: background 0.2s ease, transform 0.2s ease;
+  }
+
+  .quick-links a:hover {
+    background: var(--accent);
+    transform: scale(1.05);
+  }
 </style>
 </head>
 <body>
@@ -107,7 +129,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
 
-<script src="https://unpkg.com/@mercuryworkshop/bare-mux@2.0.9/dist/bare-mux.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux@2.0.9/dist/index.js"></script>
 <script src="/src/sj/scramjet.all.js"></script>
 
 <script>
@@ -123,9 +145,11 @@
   
   scramjet.init();
   navigator.serviceWorker.register("/sw.js");
-
+  
+  // You MUST have worker.js uploaded locally to this path for BareMux to function
   const connection = new BareMux.BareMuxConnection("/src/sj/baremux/worker.js");
   
+  // Connect to Anura's Wisp server using the Epoxy CDN transport
   connection.setTransport(
       "https://unpkg.com/@mercuryworkshop/epoxy-transport@2.1.4/dist/index.mjs", 
       [{ wisp: "wss://anura.pro/" }]
@@ -161,13 +185,6 @@
   const searchInput = document.getElementById('searchInput');
   const searchBtn = document.getElementById('searchBtn');
 
-  function encodeXor(input) {
-    if (!input) return '';
-    return encodeURIComponent(
-      input.split('').map((ch, i) => (i % 2 ? String.fromCharCode(ch.charCodeAt(0) ^ 2) : ch)).join('')
-    );
-  }
-
   function performSearch(query) {
     if (!query) return;
   
@@ -180,25 +197,28 @@
     } else {
       url = "https://search.brave.com/search?q=" + encodeURIComponent(query);
     }
-
+  
+    // Bypass the fake 'scramjet.go' function and route properly
     const prefix = scramjet.config?.prefix || "/scramjet/";
     const encodedUrl = typeof scramjet.encodeUrl === "function" 
         ? scramjet.encodeUrl(url) 
-        : encodeXor(url);
+        : encodeURIComponent(url);
     
     window.location.href = prefix + encodedUrl;
   }
 
+  // Handle searches directly from the home page input
   searchBtn.addEventListener('click', () => performSearch(searchInput.value.trim()));
   searchInput.addEventListener('keydown', e => {
     if (e.key === 'Enter') performSearch(searchInput.value.trim());
   });
 
+  // Catch the URL if passed from the omnibox in search.html
   const params = new URLSearchParams(window.location.search);
   const targetUrl = params.get('url');
   
   if (targetUrl) {
-      performSearch(decodeURIComponent(targetUrl));
+      performSearch(targetUrl);
   }
 </script>
 
