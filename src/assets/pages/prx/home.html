@@ -126,8 +126,28 @@
     <button id="searchBtn">🔍</button>
   </div>
 
-<!-- Particles.js yay -->
 <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+<script src="/src/sj/baremux/bare-mux.js"></script>
+<script src="/src/sj/scramjet.all.js"></script>
+
+<script>
+const { ScramjetController } = $scramjetLoadController();
+
+const scramjet = new ScramjetController({
+  files: {
+    wasm: "/src/sj/scramjet.wasm.wasm",
+    all: "/src/sj/scramjet.all.js",
+    sync: "/src/sj/scramjet.sync.js"
+  }
+});
+
+scramjet.init();
+
+navigator.serviceWorker.register("/sw.js");
+
+const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
+connection.setTransport("/bare/");
+</script>
 <script>
   particlesJS("particles-js", {
     "particles": {
