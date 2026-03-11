@@ -146,12 +146,10 @@
   scramjet.init();
   navigator.serviceWorker.register("/sw.js");
   
-  // You MUST have worker.js uploaded locally to this path for BareMux to function
   const connection = new BareMux.BareMuxConnection("/src/sj/baremux/worker.js");
   
-  // Connect to Anura's Wisp server using the Epoxy CDN transport
   connection.setTransport(
-      "https://unpkg.com/@mercuryworkshop/epoxy-transport@2.1.4/dist/index.mjs", 
+      "https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@2.1.4/dist/index.mjs", 
       [{ wisp: "wss://anura.pro/" }]
   );
 </script>
@@ -185,6 +183,13 @@
   const searchInput = document.getElementById('searchInput');
   const searchBtn = document.getElementById('searchBtn');
 
+  function encodeXor(input) {
+    if (!input) return '';
+    return encodeURIComponent(
+      input.split('').map((ch, i) => (i % 2 ? String.fromCharCode(ch.charCodeAt(0) ^ 2) : ch)).join('')
+    );
+  }
+
   function performSearch(query) {
     if (!query) return;
   
@@ -198,22 +203,16 @@
       url = "https://search.brave.com/search?q=" + encodeURIComponent(query);
     }
   
-    // Bypass the fake 'scramjet.go' function and route properly
     const prefix = scramjet.config?.prefix || "/scramjet/";
-    const encodedUrl = typeof scramjet.encodeUrl === "function" 
-        ? scramjet.encodeUrl(url) 
-        : encodeURIComponent(url);
     
-    window.location.href = prefix + encodedUrl;
+    window.location.href = prefix + encodeXor(url);
   }
 
-  // Handle searches directly from the home page input
   searchBtn.addEventListener('click', () => performSearch(searchInput.value.trim()));
   searchInput.addEventListener('keydown', e => {
     if (e.key === 'Enter') performSearch(searchInput.value.trim());
   });
 
-  // Catch the URL if passed from the omnibox in search.html
   const params = new URLSearchParams(window.location.search);
   const targetUrl = params.get('url');
   
@@ -221,6 +220,5 @@
       performSearch(targetUrl);
   }
 </script>
-
 </body>
 </html>
