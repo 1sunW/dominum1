@@ -107,7 +107,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
 
-<script src="/baremux/bare-mux.js"></script>
+<script src="https://unpkg.com/@mercuryworkshop/bare-mux@2.0.9/dist/bare-mux.js"></script>
 <script src="/src/sj/scramjet.all.js"></script>
 
 <script>
@@ -122,10 +122,9 @@
   });
   
   scramjet.init();
-  
   navigator.serviceWorker.register("/sw.js");
-  
-  const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
+
+  const connection = new BareMux.BareMuxConnection("/src/sj/baremux/worker.js");
   
   connection.setTransport(
       "https://unpkg.com/@mercuryworkshop/epoxy-transport@2.1.4/dist/index.mjs", 
@@ -162,6 +161,13 @@
   const searchInput = document.getElementById('searchInput');
   const searchBtn = document.getElementById('searchBtn');
 
+  function encodeXor(input) {
+    if (!input) return '';
+    return encodeURIComponent(
+      input.split('').map((ch, i) => (i % 2 ? String.fromCharCode(ch.charCodeAt(0) ^ 2) : ch)).join('')
+    );
+  }
+
   function performSearch(query) {
     if (!query) return;
   
@@ -174,8 +180,13 @@
     } else {
       url = "https://search.brave.com/search?q=" + encodeURIComponent(query);
     }
-  
-    scramjet.go(url);
+
+    const prefix = scramjet.config?.prefix || "/scramjet/";
+    const encodedUrl = typeof scramjet.encodeUrl === "function" 
+        ? scramjet.encodeUrl(url) 
+        : encodeXor(url);
+    
+    window.location.href = prefix + encodedUrl;
   }
 
   searchBtn.addEventListener('click', () => performSearch(searchInput.value.trim()));
