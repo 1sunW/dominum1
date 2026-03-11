@@ -149,46 +149,18 @@
   const connection = new BareMux.BareMuxConnection("/src/sj/baremux/worker.js");
   
   connection.setTransport(
-      "https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@2.1.4/dist/index.mjs", 
+      "https://esm.sh/@mercuryworkshop/epoxy-transport@2.1.4/dist/index.mjs", 
       [{ wisp: "wss://anura.pro/" }]
   );
 </script>
 
 <script>
   particlesJS("particles-js", {
-    "particles": {
-      "number": { "value": 80, "density": { "enable": true, "value_area": 800 } },
-      "color": { "value": "#7a5cff" },
-      "shape": { "type": "circle" },
-      "opacity": { "value": 0.6, "random": true },
-      "size": { "value": 3, "random": true },
-      "line_linked": { "enable": true, "distance": 120, "color": "#7a5cff", "opacity": 0.4, "width": 1 },
-      "move": { "enable": true, "speed": 2, "direction": "none", "random": false, "straight": false, "out_mode": "out" }
-    },
-    "interactivity": {
-      "detect_on": "canvas",
-      "events": {
-        "onhover": { "enable": true, "mode": "grab" },
-        "onclick": { "enable": true, "mode": "push" },
-        "resize": true
-      },
-      "modes": {
-        "grab": { "distance": 140, "line_linked": { "opacity": 0.6 } },
-        "push": { "particles_nb": 4 }
-      }
-    },
-    "retina_detect": true
+    "particles": { "number": { "value": 80, "density": { "enable": true, "value_area": 800 } }, "color": { "value": "#7a5cff" }, "shape": { "type": "circle" }, "opacity": { "value": 0.6, "random": true }, "size": { "value": 3, "random": true }, "line_linked": { "enable": true, "distance": 120, "color": "#7a5cff", "opacity": 0.4, "width": 1 }, "move": { "enable": true, "speed": 2, "direction": "none", "random": false, "straight": false, "out_mode": "out" } }, "interactivity": { "detect_on": "canvas", "events": { "onhover": { "enable": true, "mode": "grab" }, "onclick": { "enable": true, "mode": "push" }, "resize": true }, "modes": { "grab": { "distance": 140, "line_linked": { "opacity": 0.6 } }, "push": { "particles_nb": 4 } } }, "retina_detect": true
   });
 
   const searchInput = document.getElementById('searchInput');
   const searchBtn = document.getElementById('searchBtn');
-
-  function encodeXor(input) {
-    if (!input) return '';
-    return encodeURIComponent(
-      input.split('').map((ch, i) => (i % 2 ? String.fromCharCode(ch.charCodeAt(0) ^ 2) : ch)).join('')
-    );
-  }
 
   function performSearch(query) {
     if (!query) return;
@@ -205,7 +177,7 @@
   
     const prefix = scramjet.config?.prefix || "/scramjet/";
     
-    window.location.href = prefix + encodeXor(url);
+    window.location.href = prefix + encodeURIComponent(url);
   }
 
   searchBtn.addEventListener('click', () => performSearch(searchInput.value.trim()));
