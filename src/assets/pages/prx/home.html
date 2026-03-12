@@ -107,6 +107,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
 
+<script src="/config.js"></script>
 <script src="/baremux/index.js"></script>
 <script src="/scram/scramjet.all.js"></script>
 
@@ -145,9 +146,7 @@
   const searchBtn = document.getElementById('searchBtn');
 
   function formatUrl(input) {
-      try {
-          return new URL(input).toString();
-      } catch (err) {}
+      try { return new URL(input).toString(); } catch (err) {}
       try {
           const url = new URL(`http://${input}`);
           if (url.hostname.includes(".")) return url.toString();
@@ -155,13 +154,40 @@
       return `https://search.brave.com/search?q=${encodeURIComponent(input)}`;
   }
 
-  function performSearch(query) {
+  async function performSearch(query) {
       if (!query) return;
-      
       const formattedUrl = formatUrl(query);
-      const prefix = scramjet.config?.prefix || "/scramjet/";
+
+      // Force the script to wait until the Service Worker is fully active
+      await navigator.serviceWorker.ready;
       
-      window.location.href = prefix + encodeURIComponent(formattedUrl);
+      // If it's the very first time loading, the SW might not control the page yet. Force a quick refresh.
+      if (!navigator.serviceWorker.controller) {
+          window.location.reload();
+          return;
+      }
+
+      // Remove the old proxy frame if the user searches again
+      let existingFrame = document.getElementById("sj-frame");
+      if (existingFrame) existingFrame.remove();
+
+      // Use cityboy's native frame builder to bypass Vercel routing entirely
+      const frameObj = scramjet.createFrame();
+      const frameElement = frameObj.frame;
+      frameElement.id = "sj-frame";
+      
+      // Style it to perfectly overlay the current page
+      frameElement.style.border = "none";
+      frameElement.style.position = "absolute";
+      frameElement.style.top = "0";
+      frameElement.style.left = "0";
+      frameElement.style.width = "100%";
+      frameElement.style.height = "100%";
+      frameElement.style.zIndex = "999";
+      frameElement.style.backgroundColor = "#000";
+
+      document.body.appendChild(frameElement);
+      frameObj.go(formattedUrl);
   }
 
   searchBtn.addEventListener('click', () => performSearch(searchInput.value.trim()));
