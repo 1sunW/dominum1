@@ -158,25 +158,20 @@
       if (!query) return;
       const formattedUrl = formatUrl(query);
 
-      // Force the script to wait until the Service Worker is fully active
       await navigator.serviceWorker.ready;
       
-      // If it's the very first time loading, the SW might not control the page yet. Force a quick refresh.
       if (!navigator.serviceWorker.controller) {
           window.location.reload();
           return;
       }
 
-      // Remove the old proxy frame if the user searches again
       let existingFrame = document.getElementById("sj-frame");
       if (existingFrame) existingFrame.remove();
 
-      // Use cityboy's native frame builder to bypass Vercel routing entirely
       const frameObj = scramjet.createFrame();
       const frameElement = frameObj.frame;
       frameElement.id = "sj-frame";
       
-      // Style it to perfectly overlay the current page
       frameElement.style.border = "none";
       frameElement.style.position = "absolute";
       frameElement.style.top = "0";
