@@ -161,12 +161,7 @@
       const formattedUrl = formatUrl(query);
       const prefix = scramjet.config?.prefix || "/scramjet/";
       
-      function encodeUrl(str) {
-          if (!str) return str;
-          return encodeURIComponent(str.split('').map((char, ind) => ind % 2 ? String.fromCharCode(char.charCodeAt() ^ 2) : char).join(''));
-      }
-      
-      window.location.href = prefix + encodeUrl(formattedUrl);
+      window.location.href = prefix + encodeURIComponent(formattedUrl);
   }
 
   searchBtn.addEventListener('click', () => performSearch(searchInput.value.trim()));
