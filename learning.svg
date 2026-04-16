@@ -2,10 +2,11 @@
   <foreignObject width="100%" height="100%">
     <html xmlns="http://www.w3.org/1999/xhtml">
       <head>
-        <title>Dominum</title>
+        <title>Dominum | Loading...</title>
         <style>
           body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #0b0a16; }
-          iframe { width: 100%; height: 100%; border: none; background: #0b0a16; }
+          iframe { width: 100%; height: 100%; border: none; background: #0b0a16; visibility: hidden; }
+          .visible { visibility: visible !important; }
         </style>
       </head>
       <body>
@@ -17,31 +18,29 @@
   <script type="application/ecmascript"><![CDATA[
     (async function() {
       const frame = document.getElementById('main-frame');
-      const repoBase = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
+      
+      const currentUrl = window.location.href.split('?')[0].split('#')[0];
+      const repoBase = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1);
       
       async function renderPage(url) {
         try {
-          const cacheBuster = "?cb=" + new Date().getTime();
-          const response = await fetch(url + cacheBuster);
-          if (!response.ok) throw new Error("HTTP " + response.status);
+          const response = await fetch(url + "?cb=" + Date.now());
+          if (!response.ok) throw new Error("Status: " + response.status);
           
           let html = await response.text();
 
-          if (url.includes('index.html')) {
-            const matchTitle = html.match(/<title>(.*?)<\/title>/i);
-            if (matchTitle) document.title = matchTitle[1];
+          const matchTitle = html.match(/<title>(.*?)<\/title>/i);
+          if (matchTitle && matchTitle[1]) document.title = matchTitle[1];
 
-            const matchFavicon = html.match(/<link.*rel=["'](?:shortcut )?icon["'].*href=["'](.*?)["']/i);
-            if (matchFavicon) {
-                let link = document.querySelector("link[rel*='icon']") || document.createElement('link');
-                link.type = 'image/x-icon';
-                link.rel = 'shortcut icon';
-                link.href = matchFavicon[1].startsWith('http') ? matchFavicon[1] : repoBase + matchFavicon[1];
-                document.head.appendChild(link);
-            }
+          const matchFavicon = html.match(/<link.*rel=["'](?:shortcut )?icon["'].*href=["'](.*?)["']/i);
+          if (matchFavicon && document.head) {
+              let link = document.querySelector("link[rel*='icon']") || document.createElement('link');
+              link.rel = 'shortcut icon';
+              link.href = matchFavicon[1].startsWith('http') ? matchFavicon[1] : repoBase + matchFavicon[1];
+              document.head.appendChild(link);
           }
 
-          const scriptInjector = `
+          const interceptor = `
             <base href="${repoBase}">
             <script>
               document.addEventListener('click', e => {
@@ -54,17 +53,23 @@
             <\/script>
           `;
           
-          html = html.replace('<head>', '<head>' + scriptInjector);
+          html = html.replace('<head>', '<head>' + interceptor);
 
           const blob = new Blob([html], { type: 'text/html' });
-          frame.src = URL.createObjectURL(blob);
+          const blobUrl = URL.createObjectURL(blob);
+          
+          frame.src = blobUrl;
+          frame.classList.add('visible');
+
         } catch (err) {
-          frame.srcdoc = "<body style='background:#0b0a16;color:white;font-family:sans-serif;display:grid;place-items:center;height:100vh;'><div><h2>Load Failed</h2><p>"+err+"</p></div></body>";
+          console.error("Dominum Loader Error:", err);
+          frame.srcdoc = "<body style='background:#0b0a16;color:#e6e6ff;text-align:center;padding-top:20%;font-family:sans-serif;'><h2>Load Failed</h2><p>"+err.message+"</p></body>";
+          frame.classList.add('visible');
         }
       }
 
       window.addEventListener('message', e => {
-        if (event.data.type === 'NAV') renderPage(event.data.url);
+        if (e.data && e.data.type === 'NAV') renderPage(e.data.url);
       });
 
       renderPage(repoBase + 'index.html');
