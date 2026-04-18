@@ -458,10 +458,11 @@
   }
 
   function openDataGen() {
+    const page = "data-generator.html";
     if (window.parent && window.parent.document.getElementById("content-frame")) {
-      window.parent.document.getElementById("content-frame").src = "src/assets/pages/" + path;
+      window.parent.document.getElementById("content-frame").src = "src/assets/pages/" + page;
     } else {
-      window.location.href = path;
+      window.location.href = page;
     }
   }
 </script>
